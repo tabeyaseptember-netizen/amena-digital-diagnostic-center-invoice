@@ -226,10 +226,12 @@ export default function Dashboard() {
                           className="flex flex-col rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm cursor-pointer"
                         >
                           <div className="flex items-start space-x-2 mb-2">
-                            <Checkbox
-                              id={test.id}
-                              checked={selectedTests.includes(test.id)}
-                            />
+                            <div className="pointer-events-none">
+                              <Checkbox
+                                id={test.id}
+                                checked={selectedTests.includes(test.id)}
+                              />
+                            </div>
                             <div className="flex-1">
                               <div className="font-semibold text-foreground text-sm leading-tight">{test.name}</div>
                               <div className="text-xs text-muted-foreground mt-1">{test.category}</div>
