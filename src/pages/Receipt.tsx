@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
+import { ArrowLeft, Printer, Download, Share2, Edit } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
@@ -72,7 +72,11 @@ export default function Receipt() {
         <div className="mb-6 flex flex-wrap gap-3 print:hidden">
           <Button onClick={() => navigate("/")} variant="ghost">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            Back
+          </Button>
+          <Button onClick={() => navigate(`/edit-patient/${id}`)} variant="outline">
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
           </Button>
           <Button onClick={handlePrint} variant="outline">
             <Printer className="mr-2 h-4 w-4" />
@@ -80,7 +84,7 @@ export default function Receipt() {
           </Button>
           <Button onClick={handleDownload} variant="outline">
             <Download className="mr-2 h-4 w-4" />
-            Download PDF
+            PDF
           </Button>
           <Button onClick={handleShare} variant="outline">
             <Share2 className="mr-2 h-4 w-4" />
@@ -92,12 +96,21 @@ export default function Receipt() {
         <div className="mx-auto max-w-3xl">
           <div className="receipt-container animate-fade-in">
             {/* Header */}
-            <div className="mb-8 border-b-2 border-primary pb-6 text-center">
-              <h1 className="mb-2 text-3xl font-bold text-primary">Amena Diagnostic Center</h1>
-              <p className="text-muted-foreground">Premium Healthcare Solutions</p>
-              <p className="text-sm text-muted-foreground">
-                Phone: +880-XXX-XXXXXX | Email: info@amenadiagnostic.com
-              </p>
+            <div className="mb-8 border-b-2 border-primary pb-6">
+              <div className="flex items-start gap-4">
+                <img 
+                  src="/logo.jpg" 
+                  alt="Amena Diagnostic Center Logo" 
+                  className="h-16 w-16 object-contain rounded-lg"
+                />
+                <div className="flex-1">
+                  <h1 className="mb-2 text-3xl font-bold text-primary">Amena Diagnostic Center</h1>
+                  <p className="text-muted-foreground">Premium Healthcare Solutions</p>
+                  <p className="text-sm text-muted-foreground">
+                    Phone: +880-XXX-XXXXXX | Email: info@amenadiagnostic.com
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Receipt Info */}
