@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, DollarSign, FileText } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Users, DollarSign, FileText, Search } from "lucide-react";
 import { getPatients, initDB, initDefaultTests, getTests, addPatient, getNextSerial, type Patient, type Test } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +26,8 @@ export default function Dashboard() {
   const [gender, setGender] = useState("");
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [discount, setDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState<"flat" | "percent">("flat");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const initialize = async () => {
@@ -58,7 +61,13 @@ export default function Dashboard() {
   };
 
   const total = calculateTotal();
-  const finalAmount = total - discount;
+  const discountAmount = discountType === "percent" ? (total * discount) / 100 : discount;
+  const finalAmount = total - discountAmount;
+
+  const filteredTests = tests.filter((test) =>
+    test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    test.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +102,7 @@ export default function Dashboard() {
       age: age ? parseInt(age) : undefined,
       gender: gender || undefined,
       tests: selectedTestsData,
-      discount,
+      discount: discountAmount,
       total,
       finalAmount,
       date: new Date().toISOString(),
@@ -113,6 +122,8 @@ export default function Dashboard() {
     setGender("");
     setSelectedTests([]);
     setDiscount(0);
+    setDiscountType("flat");
+    setSearchTerm("");
     
     loadPatients();
     navigate(`/receipt/${patientId}`);
@@ -191,66 +202,124 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <Label className="mb-3 block">Select Tests *</Label>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {tests.map((test) => (
-                    <div
-                      key={test.id}
-                      className="flex items-center space-x-2 rounded-lg border p-3 hover:bg-muted/50"
-                    >
-                      <Checkbox
-                        id={test.id}
-                        checked={selectedTests.includes(test.id)}
-                        onCheckedChange={() => toggleTest(test.id)}
-                      />
-                      <label
-                        htmlFor={test.id}
-                        className="flex-1 cursor-pointer text-sm"
-                      >
-                        <div className="font-medium">{test.name}</div>
-                        <div className="text-primary">৳{test.price}</div>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="discount">Discount (৳)</Label>
+                <Label className="mb-3 block text-lg font-semibold">Select Tests *</Label>
+                
+                {/* Search Bar */}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="discount"
-                    type="number"
-                    min="0"
-                    max={total}
-                    value={discount}
-                    onChange={(e) => setDiscount(Number(e.target.value))}
-                    placeholder="0"
+                    placeholder="Search tests..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
                   />
                 </div>
+
+                {/* Bordered Scrollable Tests Area */}
+                <div className="rounded-lg border-2 border-border bg-card">
+                  <ScrollArea className="h-[300px] w-full p-4">
+                    <div className="space-y-2">
+                      {filteredTests.map((test) => (
+                        <div
+                          key={test.id}
+                          className="flex items-center justify-between rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm"
+                        >
+                          <div className="flex items-center space-x-3 flex-1">
+                            <Checkbox
+                              id={test.id}
+                              checked={selectedTests.includes(test.id)}
+                              onCheckedChange={() => toggleTest(test.id)}
+                            />
+                            <label
+                              htmlFor={test.id}
+                              className="flex-1 cursor-pointer"
+                            >
+                              <div className="font-semibold text-foreground">{test.name}</div>
+                              <div className="text-xs text-muted-foreground">{test.category}</div>
+                            </label>
+                          </div>
+                          <div className="text-lg font-bold text-primary">৳{test.price}</div>
+                        </div>
+                      ))}
+                      {filteredTests.length === 0 && (
+                        <div className="py-8 text-center text-muted-foreground">
+                          No tests found
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
 
-              <div className="rounded-lg bg-muted p-4">
-                <div className="flex justify-between text-lg">
-                  <span>Total:</span>
+              {/* Price Summary Section */}
+              <div className="rounded-lg border-2 border-border bg-card p-6 space-y-4">
+                <h3 className="text-lg font-semibold mb-4">Price Summary</h3>
+                
+                <div className="flex justify-between items-center text-base">
+                  <span className="text-muted-foreground">Selected Tests:</span>
+                  <span className="font-semibold">{selectedTests.length}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-base">
+                  <span className="text-muted-foreground">Subtotal:</span>
                   <span className="font-semibold">৳{total.toLocaleString()}</span>
                 </div>
-                {discount > 0 && (
-                  <>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>Discount:</span>
-                      <span>-৳{discount.toLocaleString()}</span>
-                    </div>
-                    <div className="mt-2 flex justify-between text-xl font-bold text-primary">
-                      <span>Final Amount:</span>
-                      <span>৳{finalAmount.toLocaleString()}</span>
-                    </div>
-                  </>
-                )}
+
+                {/* Discount Input with Type Selection */}
+                <div className="space-y-2">
+                  <Label htmlFor="discount">Discount:</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="discount"
+                      type="number"
+                      min="0"
+                      max={discountType === "percent" ? 100 : total}
+                      value={discount}
+                      onChange={(e) => setDiscount(Number(e.target.value))}
+                      placeholder="0"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant={discountType === "flat" ? "default" : "outline"}
+                      onClick={() => {
+                        setDiscountType("flat");
+                        setDiscount(0);
+                      }}
+                      className="w-16"
+                    >
+                      ৳
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={discountType === "percent" ? "default" : "outline"}
+                      onClick={() => {
+                        setDiscountType("percent");
+                        setDiscount(0);
+                      }}
+                      className="w-16"
+                    >
+                      %
+                    </Button>
+                  </div>
+                  {discount > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Discount: -{discountType === "percent" ? `${discount}%` : `৳${discount}`} 
+                      {discountType === "percent" && ` (৳${discountAmount.toLocaleString()})`}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xl font-bold">Final Amount:</span>
+                    <span className="text-2xl font-bold text-primary">৳{finalAmount.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
 
-              <Button type="submit" className="w-full btn-primary" size="lg">
-                Add Patient & Generate Receipt
+              <Button type="submit" className="w-full" size="lg">
+                Save & Generate Receipt
               </Button>
             </form>
           </Card>
