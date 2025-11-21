@@ -115,10 +115,10 @@ export default function Analysis() {
         <div className="mb-8 text-center">
           <img 
             src="/logo.jpg" 
-            alt="Amena Diagnostic Center Logo" 
+            alt="AMENA DIGITAL DIAGNOSTIC CENTER Logo" 
             className="h-32 w-32 object-contain mx-auto mb-4 rounded-xl"
           />
-          <h1 className="text-4xl font-bold mb-2">Amena Diagnostic Center</h1>
+          <h1 className="text-4xl font-bold mb-2">AMENA DIGITAL DIAGNOSTIC CENTER</h1>
           <p className="text-xl text-muted-foreground">Business Analytics</p>
         </div>
 
@@ -271,7 +271,7 @@ export default function Analysis() {
         </div>
 
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>© 2025 Amena Diagnostic Center. All rights reserved.</p>
+          <p>© 2025 AMENA DIGITAL DIAGNOSTIC CENTER. All rights reserved.</p>
         </div>
       </main>
     </div>
