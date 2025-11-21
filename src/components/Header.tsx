@@ -12,7 +12,7 @@ export const Header = () => {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Amena Diagnostic Center</h1>
+              <h1 className="text-2xl font-bold">AMENA DIGITAL DIAGNOSTIC CENTER</h1>
               <p className="text-sm text-white/90">Premium Healthcare Solutions</p>
             </div>
           </div>

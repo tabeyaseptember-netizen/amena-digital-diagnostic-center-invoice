@@ -202,7 +202,7 @@ export default function Settings() {
             </div>
             <div className="space-y-3 text-muted-foreground">
               <div>
-                <p className="font-semibold text-foreground">Amena Diagnostic Center</p>
+                <p className="font-semibold text-foreground">AMENA DIGITAL DIAGNOSTIC CENTER</p>
                 <p className="text-sm">Version 2.0.0 - PWA Edition</p>
               </div>
               <p className="text-sm">

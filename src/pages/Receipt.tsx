@@ -80,7 +80,7 @@ export default function Receipt() {
       pdf.addImage(imgData, 'JPEG', margin, 15, contentWidth, contentHeight);
 
       // Save PDF
-      const fileName = `Amena_Diagnostic_Center_-_Premium_Healthcare_Management.pdf`;
+      const fileName = `AMENA_DIGITAL_DIAGNOSTIC_CENTER_-_Premium_Healthcare_Management.pdf`;
       pdf.save(fileName);
 
       // Restore Lovable badges
@@ -169,12 +169,12 @@ export default function Receipt() {
               <div className="flex items-start gap-4">
                 <img 
                   src="/logo.jpg" 
-                  alt="Amena Diagnostic Center Logo" 
+                  alt="AMENA DIGITAL DIAGNOSTIC CENTER Logo" 
                   className="h-16 w-16 object-contain rounded-lg"
                   crossOrigin="anonymous"
                 />
                 <div className="flex-1">
-                  <h1 className="mb-2 text-2xl font-bold text-primary print:text-xl">Amena Diagnostic Center</h1>
+                  <h1 className="mb-2 text-2xl font-bold text-primary print:text-xl">AMENA DIGITAL DIAGNOSTIC CENTER</h1>
                   <p className="text-gray-700 text-sm">Premium Healthcare Solutions</p>
                   <p className="text-xs text-gray-600">
                     Phone: +880-XXX-XXXXXX | Email: info@amenadiagnostic.com
@@ -265,7 +265,7 @@ export default function Receipt() {
 
             {/* Footer */}
             <div className="mt-4 border-t border-gray-300 pt-2 text-center text-xs text-gray-600 print:mt-3">
-              <p>Thank you for choosing Amena Diagnostic Center</p>
+              <p>Thank you for choosing AMENA DIGITAL DIAGNOSTIC CENTER</p>
             </div>
           </div>
         </div>
