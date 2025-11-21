@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Navbar } from "@/components/Navbar";
@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function Receipt() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadPatient = async () => {
@@ -28,11 +32,60 @@ export default function Receipt() {
     window.print();
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    if (!receiptRef.current || !patient) return;
+    
+    setIsDownloading(true);
     toast({
-      title: "Coming Soon",
-      description: "PDF download feature will be available soon",
+      title: "Generating PDF",
+      description: "Please wait...",
     });
+
+    try {
+      // Get the receipt container element
+      const element = receiptRef.current;
+      
+      // Create canvas from the element
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+
+      // Calculate dimensions
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: imgHeight > 297 ? 'portrait' : 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Add image to PDF
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+      // Save PDF
+      const fileName = `Receipt_${patient.serial}_${patient.name.replace(/\s+/g, '_')}.pdf`;
+      pdf.save(fileName);
+
+      toast({
+        title: "Success",
+        description: "PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleShare = async () => {
@@ -78,9 +131,13 @@ export default function Receipt() {
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
-          <Button onClick={handleDownload} variant="outline">
+          <Button 
+            onClick={handleDownload} 
+            variant="outline"
+            disabled={isDownloading}
+          >
             <Download className="mr-2 h-4 w-4" />
-            PDF
+            {isDownloading ? "Generating..." : "PDF"}
           </Button>
           <Button onClick={handleShare} variant="outline">
             <Share2 className="mr-2 h-4 w-4" />
@@ -90,19 +147,20 @@ export default function Receipt() {
 
         {/* Receipt */}
         <div className="mx-auto max-w-3xl">
-          <div className="receipt-container animate-fade-in">
+          <div ref={receiptRef} className="receipt-container animate-fade-in bg-white p-8 rounded-lg shadow-lg print:shadow-none">
             {/* Header */}
-            <div className="mb-8 border-b-2 border-primary pb-6">
+            <div className="mb-6 border-b-2 border-primary pb-4 print:mb-4">
               <div className="flex items-start gap-4">
                 <img 
                   src="/logo.jpg" 
                   alt="Amena Diagnostic Center Logo" 
                   className="h-16 w-16 object-contain rounded-lg"
+                  crossOrigin="anonymous"
                 />
                 <div className="flex-1">
-                  <h1 className="mb-2 text-3xl font-bold text-primary">Amena Diagnostic Center</h1>
-                  <p className="text-muted-foreground">Premium Healthcare Solutions</p>
-                  <p className="text-sm text-muted-foreground">
+                  <h1 className="mb-2 text-2xl font-bold text-primary print:text-xl">Amena Diagnostic Center</h1>
+                  <p className="text-gray-700 text-sm">Premium Healthcare Solutions</p>
+                  <p className="text-xs text-gray-600">
                     Phone: +880-XXX-XXXXXX | Email: info@amenadiagnostic.com
                   </p>
                 </div>
@@ -110,61 +168,61 @@ export default function Receipt() {
             </div>
 
             {/* Receipt Info */}
-            <div className="mb-6 grid grid-cols-2 gap-4">
+            <div className="mb-4 grid grid-cols-2 gap-4 print:mb-3">
               <div>
-                <p className="text-sm text-muted-foreground">Receipt No:</p>
-                <p className="font-bold">#{patient.serial}</p>
+                <p className="text-xs text-gray-600">Receipt No:</p>
+                <p className="font-bold text-gray-900">#{patient.serial}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Date:</p>
-                <p className="font-bold">
+                <p className="text-xs text-gray-600">Date:</p>
+                <p className="font-bold text-gray-900">
                   {new Date(patient.date).toLocaleDateString('en-GB')}
                 </p>
               </div>
             </div>
 
             {/* Patient Info */}
-            <div className="mb-6 rounded-lg bg-muted/50 p-4">
-              <h3 className="mb-3 font-semibold text-primary">Patient Information</h3>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="mb-4 rounded-lg bg-gray-50 p-4 print:mb-3">
+              <h3 className="mb-2 font-semibold text-primary text-sm">Patient Information</h3>
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <p className="text-sm text-muted-foreground">Name:</p>
-                  <p className="font-semibold">{patient.name}</p>
+                  <p className="text-xs text-gray-600">Name:</p>
+                  <p className="font-semibold text-gray-900 text-sm">{patient.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone:</p>
-                  <p className="font-semibold">{patient.phone}</p>
+                  <p className="text-xs text-gray-600">Phone:</p>
+                  <p className="font-semibold text-gray-900 text-sm">{patient.phone}</p>
                 </div>
                 {patient.age && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Age:</p>
-                    <p className="font-semibold">{patient.age} years</p>
+                    <p className="text-xs text-gray-600">Age:</p>
+                    <p className="font-semibold text-gray-900 text-sm">{patient.age} years</p>
                   </div>
                 )}
                 {patient.gender && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Gender:</p>
-                    <p className="font-semibold">{patient.gender}</p>
+                    <p className="text-xs text-gray-600">Gender:</p>
+                    <p className="font-semibold text-gray-900 text-sm">{patient.gender}</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Tests Table */}
-            <div className="mb-6">
-              <h3 className="mb-3 font-semibold text-primary">Tests Conducted</h3>
+            <div className="mb-4 print:mb-3">
+              <h3 className="mb-2 font-semibold text-primary text-sm">Tests Conducted</h3>
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="pb-2 text-left">Test Name</th>
-                    <th className="pb-2 text-right">Price</th>
+                  <tr className="border-b-2 border-gray-300">
+                    <th className="pb-2 text-left text-sm font-semibold text-gray-900">Test Name</th>
+                    <th className="pb-2 text-right text-sm font-semibold text-gray-900">Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {patient.tests.map((test, index) => (
-                    <tr key={index} className="border-b border-border">
-                      <td className="py-2">{test.name}</td>
-                      <td className="py-2 text-right">৳{test.price.toLocaleString()}</td>
+                    <tr key={index} className="border-b border-gray-200">
+                      <td className="py-2 text-sm text-gray-800">{test.name}</td>
+                      <td className="py-2 text-right text-sm text-gray-800">৳{test.price.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -172,25 +230,25 @@ export default function Receipt() {
             </div>
 
             {/* Price Summary */}
-            <div className="space-y-2 border-t-2 border-primary pt-4">
-              <div className="flex justify-between text-lg">
-                <span>Subtotal:</span>
-                <span className="font-semibold">৳{patient.total.toLocaleString()}</span>
+            <div className="space-y-2 border-t-2 border-primary pt-3 print:pt-2">
+              <div className="flex justify-between text-base">
+                <span className="text-gray-700">Subtotal:</span>
+                <span className="font-semibold text-gray-900">৳{patient.total.toLocaleString()}</span>
               </div>
               {patient.discount > 0 && (
-                <div className="flex justify-between text-lg text-success">
+                <div className="flex justify-between text-base text-green-600">
                   <span>Discount:</span>
                   <span className="font-semibold">-৳{patient.discount.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-border pt-2 text-2xl font-bold">
-                <span>Total Amount:</span>
+              <div className="flex justify-between border-t border-gray-300 pt-2 text-xl font-bold print:text-lg">
+                <span className="text-gray-900">Total Amount:</span>
                 <span className="text-primary">৳{patient.finalAmount.toLocaleString()}</span>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="mt-6 border-t border-border pt-3 text-center text-sm text-muted-foreground print:mt-4 print:pt-2">
+            <div className="mt-4 border-t border-gray-300 pt-2 text-center text-xs text-gray-600 print:mt-3">
               <p>Thank you for choosing Amena Diagnostic Center</p>
             </div>
           </div>
