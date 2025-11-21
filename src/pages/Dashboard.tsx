@@ -354,28 +354,33 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Recent Patients */}
-        {todayPatients.length > 0 && (
+        {/* Recent Entries - Last 20 */}
+        {patients.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-4 text-2xl font-bold">Recent Patients</h2>
+            <h2 className="mb-4 text-2xl font-bold">Recent Entries</h2>
             <Card className="p-6">
               <div className="space-y-3">
-                {todayPatients.slice(-5).reverse().map((patient) => (
-                  <div 
-                    key={patient.id}
-                    className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded"
-                    onClick={() => navigate(`/receipt/${patient.id}`)}
-                  >
-                    <div>
-                      <p className="font-semibold">{patient.name}</p>
-                      <p className="text-sm text-muted-foreground">{patient.phone}</p>
+                {patients
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 20)
+                  .map((patient) => (
+                    <div 
+                      key={patient.id}
+                      className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-muted/50 -mx-2 px-2 rounded transition-colors"
+                      onClick={() => navigate(`/receipt/${patient.id}`)}
+                    >
+                      <div>
+                        <p className="font-semibold">{patient.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {patient.phone} • {new Date(patient.date).toLocaleDateString('en-GB')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-primary">৳{patient.finalAmount.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">{patient.tests.length} test(s)</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-primary">৳{patient.finalAmount.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">{patient.tests.length} test(s)</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </Card>
           </div>
