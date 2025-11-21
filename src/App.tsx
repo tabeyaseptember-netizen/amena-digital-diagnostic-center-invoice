@@ -36,7 +36,11 @@ function App() {
             <Route path="/tests" element={<Tests />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/analysis" element={
-              <ProtectedAdminRoute>
+              <ProtectedAdminRoute 
+                title="Analysis Page Access"
+                description="Enter password to access the analysis page"
+                buttonText="Access Analysis Page"
+              >
                 <Analysis />
               </ProtectedAdminRoute>
             } />
