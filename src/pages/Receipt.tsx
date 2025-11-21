@@ -64,7 +64,7 @@ export default function Receipt() {
       // Calculate dimensions with proper margins
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const margin = 5; // 0.5cm margin on each side
+      const margin = 20; // 2cm margin on each side
       const contentWidth = pageWidth - (margin * 2);
       const contentHeight = (canvas.height * contentWidth) / canvas.width;
       
@@ -77,7 +77,7 @@ export default function Receipt() {
 
       // Add image to PDF with margins
       const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
+      pdf.addImage(imgData, 'JPEG', margin, 15, contentWidth, contentHeight);
 
       // Save PDF
       const fileName = `Amena_Diagnostic_Center_-_Premium_Healthcare_Management.pdf`;
