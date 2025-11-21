@@ -221,6 +221,16 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* Developer Credit */}
+          <div className="stat-card text-center">
+            <p className="text-lg font-bold tracking-wide bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent">
+              Designed and developed by
+            </p>
+            <p className="mt-2 text-2xl font-extrabold tracking-wider bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              MONIRUL HASAN TALHA
+            </p>
+          </div>
+
           {/* Warning */}
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
