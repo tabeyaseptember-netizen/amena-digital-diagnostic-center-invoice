@@ -354,62 +354,6 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Today's Stats */}
-        <div className="mb-6">
-          <h2 className="mb-4 text-2xl font-bold">Today's Overview</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <StatCard
-              title="Patients Today"
-              value={todayPatients.length}
-              icon={Users}
-              iconBgColor="bg-primary/10"
-              iconColor="text-primary"
-            />
-            <StatCard
-              title="Revenue Today"
-              value={`৳${todayRevenue.toLocaleString()}`}
-              icon={DollarSign}
-              iconBgColor="bg-accent/10"
-              iconColor="text-accent"
-            />
-            <StatCard
-              title="Total Patients"
-              value={patients.length}
-              icon={FileText}
-              iconBgColor="bg-secondary/10"
-              iconColor="text-secondary"
-            />
-          </div>
-        </div>
-
-        {/* Monthly Stats */}
-        <div>
-          <h2 className="mb-4 text-2xl font-bold">This Month</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <StatCard
-              title="Monthly Patients"
-              value={monthPatients.length}
-              icon={Users}
-              iconBgColor="bg-info/10"
-              iconColor="text-info"
-            />
-            <StatCard
-              title="Monthly Revenue"
-              value={`৳${monthRevenue.toLocaleString()}`}
-              icon={DollarSign}
-              iconBgColor="bg-success/10"
-              iconColor="text-success"
-            />
-            <StatCard
-              title="Avg. Per Patient"
-              value={monthPatients.length > 0 ? `৳${Math.round(monthRevenue / monthPatients.length).toLocaleString()}` : '৳0'}
-              icon={FileText}
-              iconBgColor="bg-warning/10"
-              iconColor="text-warning"
-            />
-          </div>
-        </div>
-
         {/* Recent Patients */}
         {todayPatients.length > 0 && (
           <div className="mt-8">

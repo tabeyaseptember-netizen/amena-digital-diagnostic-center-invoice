@@ -9,7 +9,7 @@ import Receipt from "./pages/Receipt";
 import EditPatient from "./pages/EditPatient";
 import Tests from "./pages/Tests";
 import Settings from "./pages/Settings";
-import About from "./pages/About";
+import Analysis from "./pages/Analysis";
 import NotFound from "./pages/NotFound";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
@@ -35,7 +35,7 @@ const App = () => (
           } />
           <Route path="/tests" element={<Tests />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/analysis" element={<Analysis />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

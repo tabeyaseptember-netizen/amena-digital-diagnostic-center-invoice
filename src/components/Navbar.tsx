@@ -1,4 +1,4 @@
-import { Home, Settings, LayoutDashboard, Info } from "lucide-react";
+import { Home, Settings, LayoutDashboard, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 
 export const Navbar = () => {
@@ -26,12 +26,12 @@ export const Navbar = () => {
             </NavLink>
             
             <NavLink
-              to="/about"
+              to="/analysis"
               className="flex items-center gap-2 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
               activeClassName="text-primary bg-primary/10 font-medium"
             >
-              <Info className="h-4 w-4" />
-              <span className="hidden sm:inline">About</span>
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analysis</span>
             </NavLink>
             
             <NavLink
