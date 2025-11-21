@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, DollarSign, FileText, Search } from "lucide-react";
 import { getPatients, initDB, initDefaultTests, getTests, addPatient, getNextSerial, type Patient, type Test } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
@@ -166,6 +167,12 @@ export default function Dashboard() {
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('phone')?.focus();
+                      }
+                    }}
                     placeholder="Patient name"
                     required
                   />
@@ -176,7 +183,14 @@ export default function Dashboard() {
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && phone.length === 11) {
+                        e.preventDefault();
+                        document.getElementById('age')?.focus();
+                      }
+                    }}
                     placeholder="Phone number"
+                    maxLength={11}
                     required
                   />
                 </div>
@@ -187,17 +201,27 @@ export default function Dashboard() {
                     type="number"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('gender-trigger')?.click();
+                      }
+                    }}
                     placeholder="Age"
                   />
                 </div>
                 <div>
                   <Label htmlFor="gender">Gender</Label>
-                  <Input
-                    id="gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    placeholder="Gender"
-                  />
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger id="gender-trigger" className="w-full">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-50">
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
