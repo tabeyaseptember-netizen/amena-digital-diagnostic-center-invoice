@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
@@ -64,6 +65,7 @@ export default function Receipt() {
     <div className="min-h-screen bg-background">
       <div className="print:hidden">
         <Header />
+        <Navbar />
       </div>
       
       <main className="container mx-auto px-4 py-8">
