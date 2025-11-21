@@ -23,6 +23,7 @@ export default function History() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deletePassword, setDeletePassword] = useState("");
 
   const loadPatients = async () => {
     const allPatients = await getPatients();
@@ -42,6 +43,15 @@ export default function History() {
   );
 
   const handleDelete = async () => {
+    if (deletePassword !== "ab437620") {
+      toast({
+        title: "Error",
+        description: "Incorrect password",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (deleteId) {
       await deletePatient(deleteId);
       toast({
@@ -49,8 +59,14 @@ export default function History() {
         description: "Patient record deleted successfully",
       });
       setDeleteId(null);
+      setDeletePassword("");
       loadPatients();
     }
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteId(null);
+    setDeletePassword("");
   };
 
   return (
@@ -139,14 +155,22 @@ export default function History() {
           )}
         </div>
 
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialog open={!!deleteId} onOpenChange={handleDeleteDialogClose}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Patient Record?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the patient record and receipt.
+                This action cannot be undone. Enter the password to permanently delete this patient record and receipt.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="py-4">
+              <Input
+                type="password"
+                placeholder="Enter password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+              />
+            </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleDelete} className="bg-destructive">
