@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Info } from "lucide-react";
 
@@ -9,6 +10,7 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <Navbar />
       
       <main className="container mx-auto px-4 py-8">
         <Button
