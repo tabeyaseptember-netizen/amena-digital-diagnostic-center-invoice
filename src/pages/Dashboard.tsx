@@ -229,7 +229,6 @@ export default function Dashboard() {
                             <Checkbox
                               id={test.id}
                               checked={selectedTests.includes(test.id)}
-                              onCheckedChange={() => toggleTest(test.id)}
                             />
                             <div className="flex-1">
                               <div className="font-semibold text-foreground text-sm leading-tight">{test.name}</div>
