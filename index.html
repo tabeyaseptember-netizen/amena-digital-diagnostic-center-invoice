@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0066CC" />
+    <meta name="theme-color" content="#2563eb" />
     <title>Amena Diagnostic Center - Premium Healthcare Management</title>
-    <meta name="description" content="Professional diagnostic center receipt generator and patient management system with offline capabilities" />
+    <meta name="description" content="Offline-first diagnostic center management with permanent local data storage" />
     <meta name="author" content="Amena Diagnostic Center" />
 
     <meta property="og:title" content="Amena Diagnostic Center" />
@@ -18,13 +18,45 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Amena Diagnostic" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/placeholder.svg" />
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ SW registered - Data persistence active:', registration.scope);
+              
+              // Check for updates but don't auto-activate
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('🔄 SW update found - waiting for user action');
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('📦 New version ready - reload to update');
+                  }
+                });
+              });
+            })
+            .catch((error) => {
+              console.error('❌ SW registration failed:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
