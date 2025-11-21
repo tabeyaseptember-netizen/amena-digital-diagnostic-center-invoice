@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Lock } from "lucide-react";
 
 const ADMIN_PASSWORD = "ab437620";
-const SESSION_KEY = "admin_authenticated";
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -17,24 +15,13 @@ interface ProtectedAdminRouteProps {
 export default function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
   const { toast } = useToast();
-
-  useEffect(() => {
-    // Check if already authenticated in this session
-    const authenticated = sessionStorage.getItem(SESSION_KEY);
-    if (authenticated === "true") {
-      setIsAuthenticated(true);
-    }
-    setIsChecking(false);
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
-      sessionStorage.setItem(SESSION_KEY, "true");
       toast({
         title: "Success",
         description: "Access granted to Admin Panel",
@@ -48,14 +35,6 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
       setPassword("");
     }
   };
-
-  if (isChecking) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-      </div>
-    );
-  }
 
   if (!isAuthenticated) {
     return (

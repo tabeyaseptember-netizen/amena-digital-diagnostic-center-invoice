@@ -4,8 +4,10 @@ import { Header } from "@/components/Header";
 import { Navbar } from "@/components/Navbar";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, DollarSign, FileText } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Users, DollarSign, FileText, TrendingUp } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 export default function Analysis() {
   const navigate = useNavigate();
@@ -43,6 +45,57 @@ export default function Analysis() {
   
   const yearPatients = patients.filter(p => new Date(p.date).getFullYear() === thisYear);
   const yearRevenue = yearPatients.reduce((sum, p) => sum + p.finalAmount, 0);
+
+  // Daily revenue data for the last 30 days
+  const dailyData = Array.from({ length: 30 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (29 - i));
+    const dateStr = date.toDateString();
+    const dayPatients = patients.filter(p => new Date(p.date).toDateString() === dateStr);
+    const revenue = dayPatients.reduce((sum, p) => sum + p.finalAmount, 0);
+    return {
+      date: `${date.getDate()}/${date.getMonth() + 1}`,
+      revenue,
+      patients: dayPatients.length
+    };
+  });
+
+  // Weekly revenue data for the last 12 weeks
+  const weeklyData = Array.from({ length: 12 }, (_, i) => {
+    const weekEnd = new Date();
+    weekEnd.setDate(weekEnd.getDate() - (i * 7));
+    const weekStart = new Date(weekEnd);
+    weekStart.setDate(weekStart.getDate() - 6);
+    
+    const weekPatients = patients.filter(p => {
+      const pDate = new Date(p.date);
+      return pDate >= weekStart && pDate <= weekEnd;
+    });
+    const revenue = weekPatients.reduce((sum, p) => sum + p.finalAmount, 0);
+    
+    return {
+      week: `Week ${12 - i}`,
+      revenue,
+      patients: weekPatients.length
+    };
+  }).reverse();
+
+  // Monthly revenue data for the last 12 months
+  const monthlyData = Array.from({ length: 12 }, (_, i) => {
+    const month = new Date();
+    month.setMonth(month.getMonth() - (11 - i));
+    const monthPatients = patients.filter(p => {
+      const pDate = new Date(p.date);
+      return pDate.getMonth() === month.getMonth() && pDate.getFullYear() === month.getFullYear();
+    });
+    const revenue = monthPatients.reduce((sum, p) => sum + p.finalAmount, 0);
+    
+    return {
+      month: month.toLocaleDateString('en-US', { month: 'short' }),
+      revenue,
+      patients: monthPatients.length
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,7 +179,7 @@ export default function Analysis() {
         </div>
 
         {/* Yearly Stats */}
-        <div>
+        <div className="mb-8">
           <h2 className="mb-4 text-2xl font-bold">This Year</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
@@ -150,6 +203,70 @@ export default function Analysis() {
               iconBgColor="bg-green-500/10"
               iconColor="text-green-500"
             />
+          </div>
+        </div>
+
+        {/* Revenue Trends */}
+        <div className="space-y-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold">Revenue Trends</h2>
+            </div>
+
+            {/* Daily Revenue Chart */}
+            <Card className="p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-4">Daily Revenue (Last 30 Days)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={dailyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                    formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Revenue']}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} name="Daily Revenue" />
+                </LineChart>
+              </ResponsiveContainer>
+            </Card>
+
+            {/* Weekly Revenue Chart */}
+            <Card className="p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-4">Weekly Revenue (Last 12 Weeks)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={weeklyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="week" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                    formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Revenue']}
+                  />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="hsl(var(--accent))" name="Weekly Revenue" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+
+            {/* Monthly Revenue Chart */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Monthly Revenue (Last 12 Months)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                    formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Revenue']}
+                  />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="hsl(var(--success))" name="Monthly Revenue" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
           </div>
         </div>
 
