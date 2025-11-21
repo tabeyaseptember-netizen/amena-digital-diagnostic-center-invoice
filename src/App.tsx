@@ -35,7 +35,11 @@ function App() {
             } />
             <Route path="/tests" element={<Tests />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/analysis" element={
+              <ProtectedAdminRoute>
+                <Analysis />
+              </ProtectedAdminRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
