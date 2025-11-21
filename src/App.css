@@ -44,7 +44,7 @@
 @media print {
   @page {
     size: A4;
-    margin: 2cm 1.5cm;
+    margin: 0.5cm;
   }
   
   body {
@@ -59,7 +59,7 @@
     page-break-inside: avoid;
     box-shadow: none !important;
     margin: 0 auto;
-    padding: 2cm 1.5cm !important;
+    padding: 1.5cm 1cm !important;
     max-width: 100%;
   }
   

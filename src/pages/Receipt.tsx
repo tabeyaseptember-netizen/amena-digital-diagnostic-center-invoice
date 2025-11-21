@@ -64,7 +64,7 @@ export default function Receipt() {
       // Calculate dimensions with proper margins
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const margin = 15; // 1.5cm margin on each side
+      const margin = 5; // 0.5cm margin on each side
       const contentWidth = pageWidth - (margin * 2);
       const contentHeight = (canvas.height * contentWidth) / canvas.width;
       
