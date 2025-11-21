@@ -222,7 +222,8 @@ export default function Dashboard() {
                       {filteredTests.map((test) => (
                         <div
                           key={test.id}
-                          className="flex flex-col rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm"
+                          onClick={() => toggleTest(test.id)}
+                          className="flex flex-col rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm cursor-pointer"
                         >
                           <div className="flex items-start space-x-2 mb-2">
                             <Checkbox
@@ -230,13 +231,10 @@ export default function Dashboard() {
                               checked={selectedTests.includes(test.id)}
                               onCheckedChange={() => toggleTest(test.id)}
                             />
-                            <label
-                              htmlFor={test.id}
-                              className="flex-1 cursor-pointer"
-                            >
+                            <div className="flex-1">
                               <div className="font-semibold text-foreground text-sm leading-tight">{test.name}</div>
                               <div className="text-xs text-muted-foreground mt-1">{test.category}</div>
-                            </label>
+                            </div>
                           </div>
                           <div className="text-lg font-bold text-primary mt-auto">৳{test.price}</div>
                         </div>
