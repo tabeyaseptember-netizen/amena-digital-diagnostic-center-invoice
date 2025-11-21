@@ -5,15 +5,27 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Eye, Edit, TestTube } from "lucide-react";
-import { getPatients, type Patient } from "@/lib/db";
+import { Eye, Edit, TestTube, Trash2 } from "lucide-react";
+import { getPatients, deletePatient, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
 
   const loadPatients = async () => {
     const allPatients = await getPatients();
@@ -32,6 +44,32 @@ export default function AdminPanel() {
         test.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
   );
+
+  const handleDeleteClick = (patient: Patient) => {
+    setPatientToDelete(patient);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!patientToDelete) return;
+    
+    try {
+      await deletePatient(patientToDelete.id);
+      await loadPatients();
+      toast({
+        title: "Patient Deleted",
+        description: `${patientToDelete.name}'s record has been removed from the database.`,
+      });
+      setDeleteDialogOpen(false);
+      setPatientToDelete(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete patient record.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,6 +147,13 @@ export default function AdminPanel() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteClick(patient)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -119,6 +164,25 @@ export default function AdminPanel() {
           )}
         </div>
       </main>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Patient Record</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {patientToDelete?.name}'s record? 
+              This will permanently remove all data including tests and payment information from the database.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
