@@ -222,20 +222,17 @@ export default function Dashboard() {
                       {filteredTests.map((test) => (
                         <div
                           key={test.id}
-                          className="flex flex-col rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm cursor-pointer"
-                          onClick={() => toggleTest(test.id)}
+                          className="flex flex-col rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm"
                         >
                           <div className="flex items-start space-x-2 mb-2">
                             <Checkbox
                               id={test.id}
                               checked={selectedTests.includes(test.id)}
                               onCheckedChange={() => toggleTest(test.id)}
-                              onClick={(e) => e.stopPropagation()}
                             />
                             <label
                               htmlFor={test.id}
                               className="flex-1 cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
                             >
                               <div className="font-semibold text-foreground text-sm leading-tight">{test.name}</div>
                               <div className="text-xs text-muted-foreground mt-1">{test.category}</div>
