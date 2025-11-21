@@ -10,9 +10,17 @@ const ADMIN_PASSWORD = "ab437620";
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
+  title?: string;
+  description?: string;
+  buttonText?: string;
 }
 
-export default function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
+export default function ProtectedAdminRoute({ 
+  children, 
+  title = "Admin Panel Access",
+  description = "Enter password to access the admin panel",
+  buttonText = "Access Admin Panel"
+}: ProtectedAdminRouteProps) {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
@@ -44,9 +52,9 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Lock className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold">Admin Panel Access</h1>
+            <h1 className="text-2xl font-bold">{title}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Enter password to access the admin panel
+              {description}
             </p>
           </div>
           
@@ -65,7 +73,7 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
             </div>
             
             <Button type="submit" className="w-full">
-              Access Admin Panel
+              {buttonText}
             </Button>
           </form>
         </Card>
