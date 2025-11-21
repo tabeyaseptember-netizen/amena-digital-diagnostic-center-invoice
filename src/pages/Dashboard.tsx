@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, DollarSign, FileText, Search } from "lucide-react";
+import { Users, DollarSign, FileText, Search, Check } from "lucide-react";
 import { getPatients, initDB, initDefaultTests, getTests, addPatient, getNextSerial, type Patient, type Test } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
@@ -243,27 +243,33 @@ export default function Dashboard() {
                 <div className="rounded-lg border-2 border-border bg-card">
                   <ScrollArea className="h-[300px] w-full p-4">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                      {filteredTests.map((test) => (
-                        <div
-                          key={test.id}
-                          onClick={() => toggleTest(test.id)}
-                          className="flex flex-col rounded-lg border border-border bg-background p-3 transition-all hover:border-primary hover:shadow-sm cursor-pointer"
-                        >
-                          <div className="flex items-start space-x-2 mb-2">
-                            <div className="pointer-events-none">
-                              <Checkbox
-                                id={test.id}
-                                checked={selectedTests.includes(test.id)}
-                              />
+                      {filteredTests.map((test) => {
+                        const isSelected = selectedTests.includes(test.id);
+                        return (
+                          <div
+                            key={test.id}
+                            onClick={() => toggleTest(test.id)}
+                            className={`flex flex-col rounded-lg border-2 p-3 transition-all cursor-pointer ${
+                              isSelected 
+                                ? 'border-primary bg-primary/5 shadow-md' 
+                                : 'border-border bg-background hover:border-primary hover:shadow-sm'
+                            }`}
+                          >
+                            <div className="flex items-start space-x-2 mb-2">
+                              <div className={`flex items-center justify-center w-5 h-5 rounded border-2 flex-shrink-0 ${
+                                isSelected ? 'bg-primary border-primary' : 'border-muted-foreground'
+                              }`}>
+                                {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-semibold text-foreground text-sm leading-tight">{test.name}</div>
+                                <div className="text-xs text-muted-foreground mt-1">{test.category}</div>
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-foreground text-sm leading-tight">{test.name}</div>
-                              <div className="text-xs text-muted-foreground mt-1">{test.category}</div>
-                            </div>
+                            <div className="text-lg font-bold text-primary mt-auto">৳{test.price}</div>
                           </div>
-                          <div className="text-lg font-bold text-primary mt-auto">৳{test.price}</div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {filteredTests.length === 0 && (
                         <div className="col-span-2 lg:col-span-4 py-8 text-center text-muted-foreground">
                           No tests found
