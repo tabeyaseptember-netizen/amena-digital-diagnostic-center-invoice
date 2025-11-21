@@ -42,35 +42,51 @@ export default function Receipt() {
     });
 
     try {
+      // Temporarily hide any Lovable badges
+      const lovableBadges = document.querySelectorAll('[class*="lovable"], [id*="lovable"], [data-lovable]');
+      lovableBadges.forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+      });
+
       // Get the receipt container element
       const element = receiptRef.current;
       
-      // Create canvas from the element
+      // Create canvas from the element with higher quality
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
       });
 
-      // Calculate dimensions
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Calculate dimensions with proper margins
+      const pageWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const margin = 15; // 1.5cm margin on each side
+      const contentWidth = pageWidth - (margin * 2);
+      const contentHeight = (canvas.height * contentWidth) / canvas.width;
       
       // Create PDF
       const pdf = new jsPDF({
-        orientation: imgHeight > 297 ? 'portrait' : 'portrait',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      // Add image to PDF
-      const imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      // Add image to PDF with margins
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, contentHeight);
 
       // Save PDF
-      const fileName = `Receipt_${patient.serial}_${patient.name.replace(/\s+/g, '_')}.pdf`;
+      const fileName = `Amena_Diagnostic_Center_-_Premium_Healthcare_Management.pdf`;
       pdf.save(fileName);
+
+      // Restore Lovable badges
+      lovableBadges.forEach(el => {
+        (el as HTMLElement).style.display = '';
+      });
 
       toast({
         title: "Success",

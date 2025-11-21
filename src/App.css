@@ -59,16 +59,22 @@
     page-break-inside: avoid;
     box-shadow: none !important;
     margin: 0 auto;
-    padding: 1.5cm !important;
+    padding: 2cm 1.5cm !important;
     max-width: 100%;
   }
   
   /* Hide any branding or external elements */
   [class*="lovable"],
   [id*="lovable"],
+  [data-lovable],
   iframe,
-  script {
+  script,
+  button[class*="lovable"],
+  div[class*="lovable"],
+  a[href*="lovable"] {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
   
   /* Ensure proper spacing and clarity */
