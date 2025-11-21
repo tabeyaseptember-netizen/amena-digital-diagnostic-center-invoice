@@ -198,3 +198,29 @@ All colors MUST be HSL.
     page-break-inside: avoid;
   }
 }
+
+/* Hide Lovable Badge */
+[class*="lovable"],
+[id*="lovable"],
+[data-lovable],
+button[class*="lovable"],
+div[class*="lovable"],
+a[href*="lovable"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+@media print {
+  [class*="lovable"],
+  [id*="lovable"],
+  [data-lovable],
+  button[class*="lovable"],
+  div[class*="lovable"],
+  a[href*="lovable"],
+  iframe {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
