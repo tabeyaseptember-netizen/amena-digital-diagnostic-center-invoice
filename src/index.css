@@ -155,3 +155,46 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* Print Styles */
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+  
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .receipt-container {
+    max-height: none !important;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Hide all unnecessary elements during print */
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  /* Ensure content fits on one page */
+  * {
+    box-shadow: none !important;
+  }
+  
+  /* Optimize text for print */
+  body {
+    font-size: 12pt;
+    line-height: 1.3;
+  }
+  
+  /* Prevent page breaks inside important elements */
+  table, tr, td, th {
+    page-break-inside: avoid;
+  }
+}
