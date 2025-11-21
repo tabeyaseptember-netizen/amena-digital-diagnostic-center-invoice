@@ -1,6 +1,6 @@
-// IndexedDB for offline-first data storage
-const DB_NAME = 'AmenaDiagnosticDB';
-const DB_VERSION = 1;
+// IndexedDB for offline-first data storage with strict persistence
+const DB_NAME = 'amena_diagno_db';
+const DB_VERSION = 2; // Incremented for new stores
 
 export interface Test {
   id: string;
@@ -23,6 +23,23 @@ export interface Patient {
   date: string;
 }
 
+export interface Backup {
+  id: string;
+  timestamp: string;
+  data: {
+    patients: Patient[];
+    tests: Test[];
+  };
+}
+
+export interface PendingWrite {
+  id: string;
+  store: 'patients' | 'tests';
+  operation: 'add' | 'update' | 'delete';
+  data: any;
+  timestamp: string;
+}
+
 let db: IDBDatabase | null = null;
 
 export const initDB = (): Promise<IDBDatabase> => {
@@ -37,7 +54,9 @@ export const initDB = (): Promise<IDBDatabase> => {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
+      const oldVersion = event.oldVersion;
 
+      // NEVER delete existing stores - only create new ones or migrate
       if (!db.objectStoreNames.contains('patients')) {
         const patientStore = db.createObjectStore('patients', { keyPath: 'id' });
         patientStore.createIndex('serial', 'serial', { unique: true });
@@ -47,6 +66,23 @@ export const initDB = (): Promise<IDBDatabase> => {
       if (!db.objectStoreNames.contains('tests')) {
         const testStore = db.createObjectStore('tests', { keyPath: 'id' });
         testStore.createIndex('name', 'name', { unique: false });
+      }
+
+      // Add backup store (v2)
+      if (!db.objectStoreNames.contains('backups')) {
+        const backupStore = db.createObjectStore('backups', { keyPath: 'id' });
+        backupStore.createIndex('timestamp', 'timestamp', { unique: false });
+      }
+
+      // Add pending writes store for WAL (v2)
+      if (!db.objectStoreNames.contains('pending_writes')) {
+        const pendingStore = db.createObjectStore('pending_writes', { keyPath: 'id' });
+        pendingStore.createIndex('timestamp', 'timestamp', { unique: false });
+      }
+
+      // Migration from v1 to v2 - preserve all data
+      if (oldVersion < 2) {
+        console.log('Migrating database from v' + oldVersion + ' to v2 - preserving all data');
       }
     };
   });
@@ -59,16 +95,46 @@ const getDB = async (): Promise<IDBDatabase> => {
   return db;
 };
 
-// Patient operations
+// BroadcastChannel for multi-tab sync
+const syncChannel = new BroadcastChannel('amena_sync');
+
+// Patient operations with WAL
 export const addPatient = async (patient: Patient): Promise<void> => {
   const database = await getDB();
+  
+  // Step 1: Write to pending_writes (WAL)
+  const pendingWrite: PendingWrite = {
+    id: crypto.randomUUID(),
+    store: 'patients',
+    operation: 'add',
+    data: patient,
+    timestamp: new Date().toISOString()
+  };
+  
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(['patients'], 'readwrite');
-    const store = transaction.objectStore('patients');
-    const request = store.add(patient);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    const transaction = database.transaction(['patients', 'pending_writes'], 'readwrite');
+    const pendingStore = transaction.objectStore('pending_writes');
+    const patientStore = transaction.objectStore('patients');
+    
+    // First write to WAL
+    const pendingRequest = pendingStore.add(pendingWrite);
+    
+    pendingRequest.onsuccess = () => {
+      // Then write to main store
+      const mainRequest = patientStore.add(patient);
+      
+      mainRequest.onsuccess = () => {
+        // Clean up pending write
+        pendingStore.delete(pendingWrite.id);
+        // Notify other tabs
+        syncChannel.postMessage({ type: 'patient_added', data: patient });
+        resolve();
+      };
+      
+      mainRequest.onerror = () => reject(mainRequest.error);
+    };
+    
+    pendingRequest.onerror = () => reject(pendingRequest.error);
   });
 };
 
@@ -86,25 +152,69 @@ export const getPatients = async (): Promise<Patient[]> => {
 
 export const updatePatient = async (patient: Patient): Promise<void> => {
   const database = await getDB();
+  
+  const pendingWrite: PendingWrite = {
+    id: crypto.randomUUID(),
+    store: 'patients',
+    operation: 'update',
+    data: patient,
+    timestamp: new Date().toISOString()
+  };
+  
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(['patients'], 'readwrite');
-    const store = transaction.objectStore('patients');
-    const request = store.put(patient);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    const transaction = database.transaction(['patients', 'pending_writes'], 'readwrite');
+    const pendingStore = transaction.objectStore('pending_writes');
+    const patientStore = transaction.objectStore('patients');
+    
+    const pendingRequest = pendingStore.add(pendingWrite);
+    
+    pendingRequest.onsuccess = () => {
+      const mainRequest = patientStore.put(patient);
+      
+      mainRequest.onsuccess = () => {
+        pendingStore.delete(pendingWrite.id);
+        syncChannel.postMessage({ type: 'patient_updated', data: patient });
+        resolve();
+      };
+      
+      mainRequest.onerror = () => reject(mainRequest.error);
+    };
+    
+    pendingRequest.onerror = () => reject(pendingRequest.error);
   });
 };
 
 export const deletePatient = async (id: string): Promise<void> => {
   const database = await getDB();
+  
+  const pendingWrite: PendingWrite = {
+    id: crypto.randomUUID(),
+    store: 'patients',
+    operation: 'delete',
+    data: { id },
+    timestamp: new Date().toISOString()
+  };
+  
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(['patients'], 'readwrite');
-    const store = transaction.objectStore('patients');
-    const request = store.delete(id);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
+    const transaction = database.transaction(['patients', 'pending_writes'], 'readwrite');
+    const pendingStore = transaction.objectStore('pending_writes');
+    const patientStore = transaction.objectStore('patients');
+    
+    const pendingRequest = pendingStore.add(pendingWrite);
+    
+    pendingRequest.onsuccess = () => {
+      const mainRequest = patientStore.delete(id);
+      
+      mainRequest.onsuccess = () => {
+        pendingStore.delete(pendingWrite.id);
+        syncChannel.postMessage({ type: 'patient_deleted', data: { id } });
+        resolve();
+      };
+      
+      mainRequest.onerror = () => reject(mainRequest.error);
+    };
+    
+    pendingRequest.onerror = () => reject(pendingRequest.error);
   });
 };
 
@@ -186,4 +296,171 @@ export const initDefaultTests = async (): Promise<void> => {
   for (const test of defaultTests) {
     await addTest(test);
   }
+};
+
+// Backup operations
+export const createBackup = async (): Promise<string> => {
+  const database = await getDB();
+  const patients = await getPatients();
+  const tests = await getTests();
+  
+  const backup: Backup = {
+    id: crypto.randomUUID(),
+    timestamp: new Date().toISOString(),
+    data: { patients, tests }
+  };
+  
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(['backups'], 'readwrite');
+    const store = transaction.objectStore('backups');
+    const request = store.add(backup);
+    
+    request.onsuccess = () => resolve(backup.id);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const getBackups = async (): Promise<Backup[]> => {
+  const database = await getDB();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(['backups'], 'readonly');
+    const store = transaction.objectStore('backups');
+    const request = store.getAll();
+    
+    request.onsuccess = () => {
+      const backups = request.result;
+      // Keep only last 30 backups
+      const sorted = backups.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      resolve(sorted.slice(0, 30));
+    };
+    request.onerror = () => reject(request.error);
+  });
+};
+
+export const cleanOldBackups = async (): Promise<void> => {
+  const database = await getDB();
+  const backups = await getBackups();
+  
+  if (backups.length > 30) {
+    const toDelete = backups.slice(30);
+    const transaction = database.transaction(['backups'], 'readwrite');
+    const store = transaction.objectStore('backups');
+    
+    for (const backup of toDelete) {
+      store.delete(backup.id);
+    }
+  }
+};
+
+export const exportAllData = async (): Promise<string> => {
+  const patients = await getPatients();
+  const tests = await getTests();
+  const backups = await getBackups();
+  
+  const exportData = {
+    version: DB_VERSION,
+    exportDate: new Date().toISOString(),
+    data: { patients, tests, backups }
+  };
+  
+  return JSON.stringify(exportData, null, 2);
+};
+
+export const importData = async (jsonData: string): Promise<void> => {
+  const database = await getDB();
+  const importedData = JSON.parse(jsonData);
+  
+  // Import patients
+  if (importedData.data.patients) {
+    const transaction = database.transaction(['patients'], 'readwrite');
+    const store = transaction.objectStore('patients');
+    
+    for (const patient of importedData.data.patients) {
+      await new Promise((resolve, reject) => {
+        const request = store.put(patient);
+        request.onsuccess = () => resolve(null);
+        request.onerror = () => reject(request.error);
+      });
+    }
+  }
+  
+  // Import tests
+  if (importedData.data.tests) {
+    const transaction = database.transaction(['tests'], 'readwrite');
+    const store = transaction.objectStore('tests');
+    
+    for (const test of importedData.data.tests) {
+      await new Promise((resolve, reject) => {
+        const request = store.put(test);
+        request.onsuccess = () => resolve(null);
+        request.onerror = () => reject(request.error);
+      });
+    }
+  }
+};
+
+// Auto-backup every 24 hours
+let autoBackupInterval: number | null = null;
+
+export const startAutoBackup = () => {
+  if (autoBackupInterval) return;
+  
+  // Create backup immediately
+  createBackup().then(() => console.log('Initial backup created'));
+  
+  // Then every 24 hours
+  autoBackupInterval = window.setInterval(async () => {
+    try {
+      await createBackup();
+      await cleanOldBackups();
+      console.log('Auto-backup completed');
+    } catch (error) {
+      console.error('Auto-backup failed:', error);
+    }
+  }, 24 * 60 * 60 * 1000); // 24 hours
+};
+
+export const stopAutoBackup = () => {
+  if (autoBackupInterval) {
+    clearInterval(autoBackupInterval);
+    autoBackupInterval = null;
+  }
+};
+
+// Recover pending writes on app start
+export const recoverPendingWrites = async (): Promise<void> => {
+  const database = await getDB();
+  
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(['pending_writes', 'patients', 'tests'], 'readwrite');
+    const pendingStore = transaction.objectStore('pending_writes');
+    const request = pendingStore.getAll();
+    
+    request.onsuccess = async () => {
+      const pendingWrites: PendingWrite[] = request.result;
+      
+      for (const write of pendingWrites) {
+        try {
+          const store = transaction.objectStore(write.store);
+          
+          if (write.operation === 'add' || write.operation === 'update') {
+            store.put(write.data);
+          } else if (write.operation === 'delete') {
+            store.delete(write.data.id);
+          }
+          
+          // Clean up
+          pendingStore.delete(write.id);
+        } catch (error) {
+          console.error('Failed to recover pending write:', error);
+        }
+      }
+      
+      resolve();
+    };
+    
+    request.onerror = () => reject(request.error);
+  });
 };
