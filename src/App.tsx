@@ -11,6 +11,7 @@ import Tests from "./pages/Tests";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -21,9 +22,17 @@ const App = () => (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin" element={
+          <ProtectedAdminRoute>
+            <AdminPanel />
+          </ProtectedAdminRoute>
+        } />
         <Route path="/receipt/:id" element={<Receipt />} />
-        <Route path="/edit-patient/:id" element={<EditPatient />} />
+        <Route path="/edit-patient/:id" element={
+          <ProtectedAdminRoute>
+            <EditPatient />
+          </ProtectedAdminRoute>
+        } />
         <Route path="/tests" element={<Tests />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/about" element={<About />} />

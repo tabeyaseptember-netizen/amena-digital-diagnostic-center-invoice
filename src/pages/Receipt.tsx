@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Download, Share2, Edit } from "lucide-react";
+import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
@@ -73,10 +73,6 @@ export default function Receipt() {
           <Button onClick={() => navigate("/")} variant="ghost">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
-          </Button>
-          <Button onClick={() => navigate(`/edit-patient/${id}`)} variant="outline">
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
           </Button>
           <Button onClick={handlePrint} variant="outline">
             <Printer className="mr-2 h-4 w-4" />
@@ -194,9 +190,8 @@ export default function Receipt() {
             </div>
 
             {/* Footer */}
-            <div className="mt-8 border-t border-border pt-4 text-center text-sm text-muted-foreground">
+            <div className="mt-6 border-t border-border pt-3 text-center text-sm text-muted-foreground print:mt-4 print:pt-2">
               <p>Thank you for choosing Amena Diagnostic Center</p>
-              <p className="mt-2">This is a computer-generated receipt</p>
             </div>
           </div>
         </div>

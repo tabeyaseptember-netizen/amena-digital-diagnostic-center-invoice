@@ -5,27 +5,15 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Eye, Trash2, TestTube } from "lucide-react";
-import { getPatients, deletePatient, type Patient } from "@/lib/db";
+import { Eye, TestTube } from "lucide-react";
+import { getPatients, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deletePassword, setDeletePassword] = useState("");
 
   const loadPatients = async () => {
     const allPatients = await getPatients();
@@ -44,33 +32,6 @@ export default function AdminPanel() {
         test.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
   );
-
-  const handleDelete = async () => {
-    if (deletePassword !== "ab437620") {
-      toast({
-        title: "Error",
-        description: "Incorrect password",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (deleteId) {
-      await deletePatient(deleteId);
-      toast({
-        title: "Success",
-        description: "Patient record deleted successfully",
-      });
-      setDeleteId(null);
-      setDeletePassword("");
-      loadPatients();
-    }
-  };
-
-  const handleDeleteDialogClose = () => {
-    setDeleteId(null);
-    setDeletePassword("");
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,23 +94,13 @@ export default function AdminPanel() {
                         {new Date(patient.date).toLocaleDateString()}
                       </td>
                       <td className="py-3">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate(`/receipt/${patient.id}`)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => setDeleteId(patient.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/receipt/${patient.id}`)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </td>
                     </tr>
                   ))}
@@ -158,31 +109,6 @@ export default function AdminPanel() {
             </div>
           )}
         </div>
-
-        <AlertDialog open={!!deleteId} onOpenChange={handleDeleteDialogClose}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Patient Record?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. Enter the password to permanently delete this patient record and receipt.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <div className="py-4">
-              <Input
-                type="password"
-                placeholder="Enter password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-              />
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </main>
     </div>
   );
