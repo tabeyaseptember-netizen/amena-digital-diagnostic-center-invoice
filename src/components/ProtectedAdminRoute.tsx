@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Lock } from "lucide-react";
+import Lottie from "lottie-react";
+import passwordAnimation from "@/assets/Password_Authentication.json";
 
 const ADMIN_PASSWORD = "ab437620";
 
@@ -49,8 +50,8 @@ export default function ProtectedAdminRoute({
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="w-full max-w-md p-8">
           <div className="mb-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Lock className="h-8 w-8 text-primary" />
+            <div className="mx-auto mb-4 w-48">
+              <Lottie animationData={passwordAnimation} loop={true} />
             </div>
             <h1 className="text-2xl font-bold">{title}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
