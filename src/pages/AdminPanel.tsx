@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Eye, TestTube } from "lucide-react";
+import { Eye, Edit, TestTube } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
@@ -94,13 +94,22 @@ export default function AdminPanel() {
                         {new Date(patient.date).toLocaleDateString()}
                       </td>
                       <td className="py-3">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => navigate(`/receipt/${patient.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/receipt/${patient.id}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/edit-patient/${patient.id}`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
