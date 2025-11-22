@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,14 @@ import html2canvas from "html2canvas";
 export default function Receipt() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
+  
+  // Check if we came from admin panel
+  const fromAdmin = location.state?.from === 'admin';
 
   useEffect(() => {
     const loadPatient = async () => {
@@ -139,7 +143,7 @@ export default function Receipt() {
       
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex flex-wrap gap-3 print:hidden">
-          <Button onClick={() => navigate("/")} variant="ghost">
+          <Button onClick={() => navigate(fromAdmin ? "/admin" : "/")} variant="ghost">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>

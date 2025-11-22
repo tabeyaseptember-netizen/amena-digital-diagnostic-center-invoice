@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,14 @@ import { useToast } from "@/hooks/use-toast";
 export default function EditPatient() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Check if we came from admin panel
+  const fromAdmin = location.state?.from === 'admin';
   
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -133,7 +137,7 @@ export default function EditPatient() {
       description: "Patient updated successfully",
     });
 
-    navigate(`/receipt/${patient.id}`);
+    navigate(`/receipt/${patient.id}`, { state: { from: fromAdmin ? 'admin' : undefined } });
   };
 
   if (loading || !patient) {
@@ -154,7 +158,7 @@ export default function EditPatient() {
       
       <main className="container mx-auto px-4 py-8">
         <Button
-          onClick={() => navigate(`/receipt/${patient.id}`)}
+          onClick={() => navigate(`/receipt/${patient.id}`, { state: { from: fromAdmin ? 'admin' : undefined } })}
           variant="ghost"
           className="mb-6"
         >
@@ -340,7 +344,7 @@ export default function EditPatient() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => navigate(`/receipt/${patient.id}`)}
+                  onClick={() => navigate(`/receipt/${patient.id}`, { state: { from: fromAdmin ? 'admin' : undefined } })}
                   className="flex-1"
                 >
                   Cancel

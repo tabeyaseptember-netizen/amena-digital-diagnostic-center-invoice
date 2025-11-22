@@ -136,14 +136,14 @@ export default function AdminPanel() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => navigate(`/receipt/${patient.id}`)}
+                            onClick={() => navigate(`/receipt/${patient.id}`, { state: { from: 'admin' } })}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => navigate(`/edit-patient/${patient.id}`)}
+                            onClick={() => navigate(`/edit-patient/${patient.id}`, { state: { from: 'admin' } })}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
