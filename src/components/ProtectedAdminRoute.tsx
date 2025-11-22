@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import Lottie from "lottie-react";
 import passwordAnimation from "@/assets/Password_Authentication.json";
 
 const ADMIN_PASSWORD = "ab437620";
+const AUTH_SESSION_KEY = "admin_authenticated";
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -23,8 +24,18 @@ export default function ProtectedAdminRoute({
   buttonText = "Access Admin Panel"
 }: ProtectedAdminRouteProps) {
   const [password, setPassword] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Check sessionStorage on initial load
+    return sessionStorage.getItem(AUTH_SESSION_KEY) === "true";
+  });
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Sync authentication state with sessionStorage
+    if (isAuthenticated) {
+      sessionStorage.setItem(AUTH_SESSION_KEY, "true");
+    }
+  }, [isAuthenticated]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
