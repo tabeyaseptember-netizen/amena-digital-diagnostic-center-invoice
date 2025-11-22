@@ -37,31 +37,44 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('✅ SW registered - Data persistence active:', registration.scope);
-              
-              // Check for updates but don't auto-activate
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                console.log('🔄 SW update found - waiting for user action');
-                
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('📦 New version ready - reload to update');
-                  }
-                });
-              });
-            })
-            .catch((error) => {
-              console.error('❌ SW registration failed:', error);
-            });
-        });
-      }
+    <!-- PWA Install Prompt Handler -->
+    <script type="module">
+      let deferredPrompt;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        console.log('💾 PWA Install prompt ready');
+        
+        // Dispatch custom event that components can listen to
+        window.dispatchEvent(new CustomEvent('pwa-install-available'));
+      });
+      
+      // Function to trigger install prompt
+      window.triggerPWAInstall = async () => {
+        if (!deferredPrompt) {
+          console.log('❌ Install prompt not available');
+          return false;
+        }
+        
+        // Show the install prompt
+        deferredPrompt.prompt();
+        
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`👤 User response to install prompt: ${outcome}`);
+        
+        // Clear the deferredPrompt
+        deferredPrompt = null;
+        return outcome === 'accepted';
+      };
+      
+      window.addEventListener('appinstalled', () => {
+        console.log('✅ PWA installed successfully');
+        deferredPrompt = null;
+      });
     </script>
   </body>
 </html>
