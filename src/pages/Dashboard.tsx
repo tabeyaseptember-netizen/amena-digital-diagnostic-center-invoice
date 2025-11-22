@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, DollarSign, FileText, Search, Check } from "lucide-react";
 import { getPatients, initDB, initDefaultTests, getTests, addPatient, getNextSerial, type Patient, type Test } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -158,6 +159,9 @@ export default function Dashboard() {
       <Navbar />
       
       <main className="container mx-auto px-4 py-8">
+        {/* PWA Install Prompt */}
+        <PWAInstallButton />
+        
         {/* Add Patient Form */}
         <div className="mb-8">
           <h2 className="mb-4 text-2xl font-bold">Add New Patient</h2>
