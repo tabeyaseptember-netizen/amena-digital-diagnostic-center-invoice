@@ -319,22 +319,13 @@ export const deleteTest = async (id: string): Promise<void> => {
 
 // Initialize default tests
 export const initDefaultTests = async (): Promise<void> => {
-  const tests = await getTests();
-  if (tests.length > 0) return;
+  // Clear all existing tests first
+  const existingTests = await getTests();
+  for (const test of existingTests) {
+    await deleteTest(test.id);
+  }
 
   const defaultTests: Test[] = [
-    { id: crypto.randomUUID(), name: 'Complete Blood Count (CBC)', price: 500, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Blood Sugar (Fasting)', price: 200, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Blood Sugar (Random)', price: 150, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Lipid Profile', price: 800, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Liver Function Test (LFT)', price: 1000, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Kidney Function Test (KFT)', price: 900, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Thyroid Profile (T3, T4, TSH)', price: 1200, category: 'Hormone Test' },
-    { id: crypto.randomUUID(), name: 'HbA1c', price: 600, category: 'Blood Test' },
-    { id: crypto.randomUUID(), name: 'Urine Routine', price: 300, category: 'Urine Test' },
-    { id: crypto.randomUUID(), name: 'X-Ray Chest', price: 700, category: 'Radiology' },
-    { id: crypto.randomUUID(), name: 'Ultrasound (Whole Abdomen)', price: 1500, category: 'Radiology' },
-    { id: crypto.randomUUID(), name: 'ECG', price: 400, category: 'Cardiology' },
     { id: crypto.randomUUID(), name: 'OGTT', price: 500, category: 'Blood Test' },
     { id: crypto.randomUUID(), name: 'CUS', price: 500, category: 'Blood Test' },
     { id: crypto.randomUUID(), name: 'Aldehyde Test (AT)', price: 300, category: 'Blood Test' },
