@@ -259,7 +259,7 @@ export default function Receipt() {
 
                 {/* Receipt number and QR on the same horizontal line */}
                 {qrDataUrl && (
-                  <div className="absolute right-4 -top-4 z-10 flex flex-col items-center">
+                  <div className="absolute right-4 top-2 z-10 flex flex-col items-center">
                     <img src={qrDataUrl} alt="Receipt QR" className="h-20 w-20 object-contain bg-white rounded-sm border border-gray-200" />
                   </div>
                 )}
