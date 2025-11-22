@@ -3,6 +3,17 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { initDB, initDefaultTests, recoverPendingWrites, startAutoBackup } from "./lib/db";
+import { registerSW } from 'virtual:pwa-register';
+
+// Register PWA Service Worker
+const updateSW = registerSW({
+  onNeedRefresh() {
+    console.log('🔄 New content available, please refresh.');
+  },
+  onOfflineReady() {
+    console.log('✅ App ready to work offline');
+  },
+});
 
 // Initialize database with strict persistence
 initDB()
