@@ -16,6 +16,7 @@ export interface Patient {
   phone: string;
   age?: number;
   gender?: string;
+  address?: string;
   tests: Test[];
   discount: number;
   total: number;

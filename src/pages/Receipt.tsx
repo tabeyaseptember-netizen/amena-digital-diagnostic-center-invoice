@@ -222,6 +222,12 @@ export default function Receipt() {
                   </div>
                 )}
               </div>
+              {patient.address && (
+                <div className="mt-2">
+                  <p className="text-xs text-gray-600">Address:</p>
+                  <p className="font-semibold text-gray-900 text-sm">{patient.address}</p>
+                </div>
+              )}
             </div>
 
             {/* Tests Table */}
