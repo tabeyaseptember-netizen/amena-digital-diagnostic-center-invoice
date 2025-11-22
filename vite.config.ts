@@ -23,18 +23,22 @@ export default defineConfig(({ mode }) => ({
         theme_color: '#0066CC',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait-primary',
         start_url: '/',
         scope: '/',
+        categories: ['medical', 'health', 'productivity', 'business'],
         icons: [
           {
             src: '/logo.jpg',
             sizes: '192x192',
-            type: 'image/jpeg'
+            type: 'image/jpeg',
+            purpose: 'any maskable'
           },
           {
             src: '/logo.jpg',
             sizes: '512x512',
-            type: 'image/jpeg'
+            type: 'image/jpeg',
+            purpose: 'any maskable'
           }
         ]
       },
