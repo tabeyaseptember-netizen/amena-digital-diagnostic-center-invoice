@@ -213,7 +213,7 @@ export default function Receipt() {
         <Navbar />
       </div>
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4">
         <div className="mb-6 flex flex-wrap gap-3 print:hidden">
           <Button onClick={() => navigate(fromAdmin ? "/admin" : "/")} variant="ghost">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -239,7 +239,7 @@ export default function Receipt() {
 
         {/* Receipt */}
         <div className="mx-auto max-w-3xl">
-          <div ref={receiptRef} className="receipt-container animate-fade-in bg-white p-6 rounded-lg shadow-lg print:shadow-none">
+          <div ref={receiptRef} className="receipt-container animate-fade-in bg-white p-4 rounded-lg shadow-lg print:shadow-none">
             {/* Header */}
             <div className="relative mb-4 border-b-2 border-primary pb-2 print:mb-3" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
               <div className="flex items-start justify-between gap-4">
@@ -253,6 +253,7 @@ export default function Receipt() {
                   <div className="flex-1">
                     <h1 className="mb-1 text-xl font-bold text-primary print:text-lg">AMENA DIGITAL DIAGNOSTIC CENTER</h1>
                     <p className="text-gray-700 text-sm">Premium Healthcare Solutions</p>
+                    <p className="text-gray-700 text-sm">Contact: 01722-135021</p>
                   </div>
                 </div>
 
