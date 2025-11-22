@@ -19,6 +19,7 @@ export default function AddPatient() {
     phone: "",
     age: "",
     gender: "",
+    address: "",
   });
   const [discount, setDiscount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,6 +78,7 @@ export default function AddPatient() {
       phone: formData.phone,
       age: formData.age ? parseInt(formData.age) : undefined,
       gender: formData.gender || undefined,
+      address: formData.address.trim() || undefined,
       tests: selectedTests,
       discount,
       total,
@@ -163,6 +165,20 @@ export default function AddPatient() {
                     <option value="Other">Other</option>
                   </select>
                 </div>
+              </div>
+              
+              {/* Optional Address Field */}
+              <div className="mt-4 rounded-lg bg-muted/30 p-4">
+                <Label htmlFor="address">
+                  Address <span className="text-xs text-muted-foreground">(Optional)</span>
+                </Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Enter address"
+                  className="mt-1"
+                />
               </div>
             </div>
 

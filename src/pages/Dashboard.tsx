@@ -25,6 +25,7 @@ export default function Dashboard() {
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
+  const [address, setAddress] = useState("");
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState<"flat" | "percent">("flat");
@@ -102,6 +103,7 @@ export default function Dashboard() {
       phone,
       age: age ? parseInt(age) : undefined,
       gender: gender || undefined,
+      address: address.trim() || undefined,
       tests: selectedTestsData,
       discount: discountAmount,
       total,
@@ -121,6 +123,7 @@ export default function Dashboard() {
     setPhone("");
     setAge("");
     setGender("");
+    setAddress("");
     setSelectedTests([]);
     setDiscount(0);
     setDiscountType("flat");
@@ -224,6 +227,21 @@ export default function Dashboard() {
                   </Select>
                 </div>
               </div>
+
+              {/* Optional Address Field */}
+              <Card className="p-4 bg-muted/30">
+                <div>
+                  <Label htmlFor="address">
+                    Address <span className="text-xs text-muted-foreground">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter address"
+                  />
+                </div>
+              </Card>
 
               <div>
                 <Label className="mb-3 block text-lg font-semibold">Select Tests *</Label>
