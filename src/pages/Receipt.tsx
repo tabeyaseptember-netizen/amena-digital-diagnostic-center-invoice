@@ -188,12 +188,8 @@ export default function Receipt() {
             </div>
 
             {/* Receipt Info */}
-            <div className="mb-4 grid grid-cols-2 gap-4 print:mb-3">
+            <div className="mb-4">
               <div>
-                <p className="text-xs text-gray-600">Receipt No:</p>
-                <p className="font-bold text-gray-900">#{patient.serial}</p>
-              </div>
-              <div className="text-right">
                 <p className="text-xs text-gray-600">Date:</p>
                 <p className="font-bold text-gray-900">
                   {new Date(patient.date).toLocaleDateString('en-GB')}

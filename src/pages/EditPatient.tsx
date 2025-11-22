@@ -116,7 +116,7 @@ export default function EditPatient() {
       };
     });
 
-    // CRITICAL: Preserve original serial, ID, and date
+    // CRITICAL: Preserve original ID and date
     const updatedPatient: Patient = {
       ...patient,
       name,
@@ -168,11 +168,11 @@ export default function EditPatient() {
 
         <div className="mb-4 rounded-lg bg-muted/50 p-4">
           <p className="text-sm text-muted-foreground">
-            <strong>Editing Patient Record</strong> - Serial #{patient.serial} | 
+            <strong>Editing Patient Record</strong> | 
             Original Date: {new Date(patient.date).toLocaleString('en-GB')}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Note: Serial number and date will remain unchanged
+            Note: Date will remain unchanged
           </p>
         </div>
 
