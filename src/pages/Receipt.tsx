@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, Download, Share2 } from "lucide-react";
 import { getPatients, type Patient } from "@/lib/db";
+import QRCode from 'qrcode';
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -16,6 +17,9 @@ export default function Receipt() {
   const { toast } = useToast();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState<boolean | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
   
   // Check if we came from admin panel
@@ -24,13 +28,45 @@ export default function Receipt() {
   useEffect(() => {
     const loadPatient = async () => {
       const patients = await getPatients();
-      const found = patients.find(p => p.id === id);
+      // Find by primary id or by receiptId (QR may contain receiptId)
+      const found = patients.find(p => p.id === id || p.receiptId === id);
       if (found) {
         setPatient(found);
+      } else {
+        // mark not found so we can show a friendly message
+        setNotFound(true);
       }
     };
     loadPatient();
   }, [id]);
+
+  // Generate QR and verify if hash provided
+  useEffect(() => {
+    if (!patient) return;
+
+    (async () => {
+      try {
+        const receiptId = patient.receiptId ?? patient.id;
+        const hashQuery = new URLSearchParams(window.location.search).get('h');
+        // Build shareable URL (scannable)
+        const shareUrl = `${window.location.origin}/receipt/${receiptId}${hashQuery ? `?h=${hashQuery}` : patient.receiptHash ? `?h=${patient.receiptHash}` : ''}`;
+        const dataUrl = await QRCode.toDataURL(shareUrl, { width: 250, margin: 1 });
+        setQrDataUrl(dataUrl);
+
+        if (hashQuery) {
+          setIsVerified(hashQuery === patient.receiptHash);
+        } else if (patient.receiptHash) {
+          // If no hash in URL, we still show verified=true because it matches stored
+          setIsVerified(true);
+        } else {
+          setIsVerified(null);
+        }
+      } catch (e) {
+        console.error('Failed to generate QR', e);
+        setQrDataUrl(null);
+      }
+    })();
+  }, [patient]);
 
   const handlePrint = () => {
     window.print();
@@ -127,9 +163,45 @@ export default function Receipt() {
   };
 
   if (!patient) {
+    if (!notFound) {
+      return (
+        <div className="flex min-h-screen items-center justify-center">
+          <p>Loading receipt...</p>
+        </div>
+      );
+    }
+
+    // If we reach here, receipt was not found in local DB (scanned from a different device)
+    const queryHash = new URLSearchParams(window.location.search).get('h');
+    const receiptIdentifier = id;
+
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Loading receipt...</p>
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="max-w-2xl w-full bg-white p-8 rounded-lg shadow-lg text-center">
+          <h2 className="mb-4 text-xl font-semibold">Receipt not available on this device</h2>
+          <p className="text-sm text-gray-700 mb-4">
+            This QR code (Receipt ID <span className="font-mono">{receiptIdentifier}</span>) was generated on a different device.
+            For security and privacy, receipts can only be viewed on the device where they were created — i.e. the AMENA DIGITAL DIAGNOSTIC CENTER local device.
+          </p>
+          {queryHash && (
+            <p className="text-xs text-gray-600 mb-3">Hash: <span className="font-mono">{queryHash}</span></p>
+          )}
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => navigator.clipboard?.writeText(window.location.href)}
+              className="px-4 py-2 rounded bg-primary text-white"
+            >
+              Copy URL
+            </button>
+            <button
+              onClick={() => window.history.back()}
+              className="px-4 py-2 rounded border"
+            >
+              Go back
+            </button>
+          </div>
+          <p className="mt-4 text-xs text-gray-500">If you are at the clinic, open this link on the original device to view the receipt.</p>
+        </div>
       </div>
     );
   }
@@ -167,33 +239,40 @@ export default function Receipt() {
 
         {/* Receipt */}
         <div className="mx-auto max-w-3xl">
-          <div ref={receiptRef} className="receipt-container animate-fade-in bg-white p-8 rounded-lg shadow-lg print:shadow-none">
+          <div ref={receiptRef} className="receipt-container animate-fade-in bg-white p-6 rounded-lg shadow-lg print:shadow-none">
             {/* Header */}
-            <div className="mb-6 border-b-2 border-primary pb-4 print:mb-4">
-              <div className="flex items-start gap-4">
-                <img 
-                  src="/logo.jpg" 
-                  alt="AMENA DIGITAL DIAGNOSTIC CENTER Logo" 
-                  className="h-16 w-16 object-contain rounded-lg"
-                  crossOrigin="anonymous"
-                />
-                <div className="flex-1">
-                  <h1 className="mb-2 text-2xl font-bold text-primary print:text-xl">AMENA DIGITAL DIAGNOSTIC CENTER</h1>
-                  <p className="text-gray-700 text-sm">Premium Healthcare Solutions</p>
-                  <p className="text-xs text-gray-600">
-                    Phone: +880-XXX-XXXXXX | Email: info@amenadiagnostic.com
-                  </p>
+            <div className="relative mb-4 border-b-2 border-primary pb-2 print:mb-3" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 pr-32">
+                  <img 
+                    src="/logo.jpg" 
+                    alt="AMENA DIGITAL DIAGNOSTIC CENTER Logo" 
+                    className="h-12 w-12 object-contain rounded-lg"
+                    crossOrigin="anonymous"
+                  />
+                  <div className="flex-1">
+                    <h1 className="mb-1 text-xl font-bold text-primary print:text-lg">AMENA DIGITAL DIAGNOSTIC CENTER</h1>
+                    <p className="text-gray-700 text-sm">Premium Healthcare Solutions</p>
+                  </div>
                 </div>
+
+                {/* Receipt number and QR on the same horizontal line */}
+                {qrDataUrl && (
+                  <div className="absolute right-4 -top-4 z-10 flex flex-col items-center">
+                    <img src={qrDataUrl} alt="Receipt QR" className="h-16 w-16 object-contain bg-white rounded-sm border border-gray-200" />
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Receipt Info */}
-            <div className="mb-4">
+            {/* Date and Receipt No on same line */}
+            <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600">Date:</p>
-                <p className="font-bold text-gray-900">
-                  {new Date(patient.date).toLocaleDateString('en-GB')}
-                </p>
+                <p className="font-bold text-gray-900">{new Date(patient.date).toLocaleDateString('en-GB')}</p>
+              </div>
+              <div className="text-xs text-gray-700 whitespace-nowrap">
+                Receipt No: <span className="font-mono">{patient.receiptId ?? patient.id}</span>
               </div>
             </div>
 
@@ -271,7 +350,11 @@ export default function Receipt() {
 
             {/* Footer */}
             <div className="mt-4 border-t border-gray-300 pt-2 text-center text-xs text-gray-600 print:mt-3">
-              <p>Thank you for choosing AMENA DIGITAL DIAGNOSTIC CENTER</p>
+              <div className="mt-3 flex items-center justify-center gap-4">
+                <div className="flex flex-col items-start text-left">
+                  <p className="text-xs">Verified: <span className={`font-semibold ${isVerified ? 'text-green-600' : 'text-red-600'}`}>{isVerified === null ? 'N/A' : isVerified ? 'Yes' : 'No'}</span></p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

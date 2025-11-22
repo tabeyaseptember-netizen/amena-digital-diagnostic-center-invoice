@@ -22,6 +22,9 @@ export interface Patient {
   total: number;
   finalAmount: number;
   date: string;
+  // Optional fields for receipt QR functionality
+  receiptId?: string;
+  receiptHash?: string;
 }
 
 export interface Backup {
@@ -103,6 +106,26 @@ const syncChannel = new BroadcastChannel('amena_sync');
 export const addPatient = async (patient: Patient): Promise<void> => {
   const database = await getDB();
   
+  // Ensure receiptId and compute receiptHash (SHA-256 of canonical receipt payload)
+  if (!patient.receiptId) patient.receiptId = crypto.randomUUID();
+  try {
+    const receiptPayload = JSON.stringify({
+      serial: patient.serial,
+      name: patient.name,
+      phone: patient.phone,
+      tests: patient.tests,
+      total: patient.total,
+      finalAmount: patient.finalAmount,
+      date: patient.date
+    });
+    const encoder = new TextEncoder();
+    const digest = await crypto.subtle.digest('SHA-256', encoder.encode(receiptPayload));
+    patient.receiptHash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    console.warn('Failed to compute receipt hash', e);
+    patient.receiptHash = undefined;
+  }
+
   // Step 1: Write to pending_writes (WAL)
   const pendingWrite: PendingWrite = {
     id: crypto.randomUUID(),
@@ -153,7 +176,27 @@ export const getPatients = async (): Promise<Patient[]> => {
 
 export const updatePatient = async (patient: Patient): Promise<void> => {
   const database = await getDB();
-  
+
+  // Ensure receiptId exists and recompute receiptHash on update
+  if (!patient.receiptId) patient.receiptId = crypto.randomUUID();
+  try {
+    const receiptPayload = JSON.stringify({
+      serial: patient.serial,
+      name: patient.name,
+      phone: patient.phone,
+      tests: patient.tests,
+      total: patient.total,
+      finalAmount: patient.finalAmount,
+      date: patient.date
+    });
+    const encoder = new TextEncoder();
+    const digest = await crypto.subtle.digest('SHA-256', encoder.encode(receiptPayload));
+    patient.receiptHash = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    console.warn('Failed to compute receipt hash on update', e);
+    patient.receiptHash = undefined;
+  }
+
   const pendingWrite: PendingWrite = {
     id: crypto.randomUUID(),
     store: 'patients',

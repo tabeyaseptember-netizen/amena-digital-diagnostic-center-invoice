@@ -62,8 +62,9 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
+      // Disable dev HTML proxy to avoid issues on Windows paths with spaces/OneDrive
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ].filter(Boolean),

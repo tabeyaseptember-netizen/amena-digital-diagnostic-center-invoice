@@ -49,8 +49,7 @@ export default function History() {
   const filteredPatients = patients.filter(patient => {
     // Search filter
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm) ||
-      patient.serial.toString().includes(searchTerm);
+      patient.phone.includes(searchTerm);
     
     // Date filter
     let matchesDate = true;
@@ -87,9 +86,8 @@ export default function History() {
   });
 
   const exportToCSV = () => {
-    const headers = ["Serial", "Name", "Phone", "Date", "Tests", "Amount"];
+    const headers = ["Name", "Phone", "Date", "Tests", "Amount"];
     const rows = filteredPatients.map(p => [
-      p.serial,
       p.name,
       p.phone,
       new Date(p.date).toLocaleDateString('en-GB'),
@@ -177,11 +175,11 @@ export default function History() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <Label htmlFor="search">Search</Label>
-              <div className="relative">
+                <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Name, phone, serial..."
+                  placeholder="Name, phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -274,7 +272,7 @@ export default function History() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="pb-3 text-left">Receipt #</th>
+                    {/* Serial/receipt number removed from display */}
                     <th className="pb-3 text-left">Name</th>
                     <th className="pb-3 text-left">Phone</th>
                     <th className="pb-3 text-left">Date</th>
@@ -286,7 +284,7 @@ export default function History() {
                 <tbody>
                   {filteredPatients.map((patient) => (
                     <tr key={patient.id} className="border-b border-border last:border-0">
-                      <td className="py-3 font-mono">#{patient.serial}</td>
+                      {/* Serial removed from UI */}
                       <td className="py-3 font-semibold">{patient.name}</td>
                       <td className="py-3">{patient.phone}</td>
                       <td className="py-3 text-sm text-muted-foreground">

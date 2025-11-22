@@ -5,8 +5,8 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Eye, Edit, TestTube, Trash2 } from "lucide-react";
-import { getPatients, deletePatient, type Patient } from "@/lib/db";
+import { Eye, Edit, TestTube, Trash2, Download } from "lucide-react";
+import { getPatients, deletePatient, exportAllData, type Patient } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -79,14 +79,39 @@ export default function AdminPanel() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <Button
-            onClick={() => navigate("/tests")}
-            variant="outline"
-            className="gap-2"
-          >
-            <TestTube className="h-4 w-4" />
-            Manage Tests
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => navigate("/tests")}
+              variant="outline"
+              className="gap-2"
+            >
+              <TestTube className="h-4 w-4" />
+              Manage Tests
+            </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  const data = await exportAllData();
+                  const blob = new Blob([data], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `amena-backup-${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  toast({ title: 'Export Successful', description: 'All data downloaded as JSON.' });
+                } catch (error) {
+                  toast({ title: 'Export Failed', description: 'Unable to export data.', variant: 'destructive' });
+                }
+              }}
+              variant="outline"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </Button>
+          </div>
         </div>
 
         <Card className="mb-6 p-4">
@@ -109,7 +134,7 @@ export default function AdminPanel() {
               <table className="w-full">
                 <thead className="border-b">
                   <tr className="text-left">
-                    <th className="pb-3 font-semibold">Serial</th>
+                    {/* Serial removed from Admin list display */}
                     <th className="pb-3 font-semibold">Name</th>
                     <th className="pb-3 font-semibold">Phone</th>
                     <th className="pb-3 font-semibold">Tests</th>
@@ -121,8 +146,10 @@ export default function AdminPanel() {
                 <tbody>
                   {filteredPatients.map((patient) => (
                     <tr key={patient.id} className="border-b last:border-0">
-                      <td className="py-3">{patient.serial}</td>
+                      {/* serial removed */}
                       <td className="py-3 font-medium">{patient.name}</td>
+                      <td className="py-3">{patient.phone}</td>
+                      <td className="py-3">{patient.tests.length}</td>
                       <td className="py-3">{patient.phone}</td>
                       <td className="py-3">{patient.tests.length}</td>
                       <td className="py-3 font-semibold text-primary">
